@@ -15,12 +15,12 @@ const zeroPaddedNumber = (num) => {
   return sprintf('%05d', num);
 };
 
-const readCounter = (callback) => {
+const readCounter = (callback) => { // (err, id) => writeCounter(id + 1, callback)
   fs.readFile(exports.counterFile, (err, fileData) => {
     if (err) {
-      callback(null, 0);
+      callback(null, 0); // (err, id) => writeCounter(id + 1, callback)
     } else {
-      callback(null, Number(fileData));
+      callback(null, Number(fileData)); // (err, id) => writeCounter(id + 1, callback)
     }
   });
 };
