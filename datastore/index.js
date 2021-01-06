@@ -50,23 +50,39 @@ exports.readOne = (id, callback) => {
   });
 };
 
-// var text = items[id];
-//  if (!text) {
-//   callback(new Error(`No item with id: ${id}`));
-// } else {
-//   callback(null, { id, text });
-// }
-
 
 exports.update = (id, text, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    items[id] = text;
-    callback(null, { id, text });
-  }
+  let filePath = path.join(exports.dataDir, `${id}.txt`);
+
+  // if (!exports.readOne(id, callback)) {
+  //   return;
+  // }
+
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      fs.writeFile(filePath, text, (err, data) => {
+        if (err) {
+          callback(new Error(`No item with id: ${id}`));
+        } else {
+          callback(null, { id, text });
+        }
+      });
+    }
+  });
 };
+
+
+//   var item = items[id];
+//   if (!item) {
+//     callback(new Error(`No item with id: ${id}`));
+//   } else {
+//     items[id] = text;
+//     callback(null, { id, text });
+//   }
+// };
+
 
 exports.delete = (id, callback) => {
   var item = items[id];
