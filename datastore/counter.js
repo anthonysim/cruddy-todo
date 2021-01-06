@@ -25,13 +25,13 @@ const readCounter = (callback) => { // (err, id) => writeCounter(id + 1, callbac
   });
 };
 
-const writeCounter = (count, callback) => {
+const writeCounter = (count, callback) => { // exports.create = (text, callback)
   var counterString = zeroPaddedNumber(count);
   fs.writeFile(exports.counterFile, counterString, (err) => {
     if (err) {
       throw ('error writing counter');
     } else {
-      callback(null, counterString);
+      callback(null, counterString); // exports.create = (text, callback)
     }
   });
 };

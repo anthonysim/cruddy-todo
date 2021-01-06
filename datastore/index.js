@@ -9,23 +9,35 @@ var items = {};
 
 exports.create = (text, callback) => {
   counter.getNextUniqueId((err, data) => {
+    let file = path.join(exports.dataDir, `${data}.txt`);
 
-    fs.writeFile(path.join(exports.dataDir, `${data}.txt`), text, (err) => {
+    fs.writeFile(file, text, (err) => {
       if (err) {
         console.error(err);
       } else {
-        callback(null, { id: data, text: text });
+        callback(null, { id: data, text });
       }
     });
   });
 };
 
 exports.readAll = (callback) => {
-  var data = _.map(items, (text, id) => {
-    return { id, text };
+
+  fs.readdir(exports.dataDir, (err, files) => {
+    if (err) {
+      console.error(err);
+    }
+
+    let arr = [];
+    files.forEach(function (file) {
+
+      let data = file.toString().slice(0, 5);
+      arr.push({ id: data, text: data });
+    });
+    callback(null, arr);
   });
-  callback(null, data);
 };
+
 
 exports.readOne = (id, callback) => {
   var text = items[id];
