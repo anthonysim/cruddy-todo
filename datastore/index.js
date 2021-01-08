@@ -53,6 +53,7 @@ exports.readOne = (id, callback) => {
 // };
 
 exports.readAll = (callback) => {
+  // promise to get all the file names
   let p = new Promise((resolve, reject) => {
     fs.readdir(exports.dataDir, (err, files) => {
       if (err) {
@@ -76,12 +77,11 @@ exports.readAll = (callback) => {
         }
       });
     });
-    Promise.all(todos);
+    Promise.all(todos)
+      .then((results) => callback(null, results))
+      .catch((err) => callback(err));
   });
 };
-
-
-
 
 
 
