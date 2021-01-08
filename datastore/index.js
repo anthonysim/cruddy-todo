@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
+var Promise = require('bluebird');
+var readFileAsync = Promise.promisify(require('fs').readFile);
 
 var items = {};
 
@@ -21,22 +23,6 @@ exports.create = (text, callback) => {
   });
 };
 
-exports.readAll = (callback) => {
-  fs.readdir(exports.dataDir, (err, files) => {
-    if (err) {
-      console.error(err);
-    }
-
-    let arr = [];
-    files.forEach(function (file) {
-
-      let data = file.toString().slice(0, 5);
-      arr.push({ id: data, text: data });
-    });
-    callback(null, arr);
-  });
-};
-
 
 exports.readOne = (id, callback) => {
   let filePath = path.join(exports.dataDir, `${id}.txt`);
@@ -49,6 +35,39 @@ exports.readOne = (id, callback) => {
     }
   });
 };
+
+exports.readAll = (callback) => {
+  let p = new Promise((resolve, reject) => {
+    fs.readdir(exports.dataDir, (err, files) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(files);
+      }
+    });
+  });
+
+  p.then(files => {
+    let todos = files.map(function (file) {
+      return readFileAsync(path.join(exports.dataDir, file), 'utf8', (err, data) => {
+        if (err) {
+          console.error(err);
+        } else {
+          return {
+            id: file.toString().slice(0, 5),
+            text: data.toString().split('\n')
+          };
+        }
+      });
+    });
+    Promise.all(todos).catch(err => console.error(err));
+  });
+};
+
+
+
+
+
 
 
 exports.update = (id, text, callback) => {
