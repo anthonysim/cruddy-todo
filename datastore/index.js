@@ -36,6 +36,22 @@ exports.readOne = (id, callback) => {
   });
 };
 
+// exports.readAll = (callback) => {
+//   fs.readdir(exports.dataDir, (err, files) => {
+//     if (err) {
+//       console.error(err);
+//     }
+
+//     let arr = [];
+//     files.forEach(function (file) {
+
+//       let data = file.toString().slice(0, 5);
+//       arr.push({ id: data, text: data });
+//     });
+//     callback(null, arr);
+//   });
+// };
+
 exports.readAll = (callback) => {
   let p = new Promise((resolve, reject) => {
     fs.readdir(exports.dataDir, (err, files) => {
@@ -60,7 +76,7 @@ exports.readAll = (callback) => {
         }
       });
     });
-    Promise.all(todos).catch(err => console.error(err));
+    Promise.all(todos);
   });
 };
 
