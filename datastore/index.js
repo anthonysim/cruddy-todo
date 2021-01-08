@@ -65,26 +65,34 @@ exports.readAll = (callback) => {
   });
 
   p.then(files => {
-    let todos = files.map(function (file) {
-      return readFileAsync(path.join(exports.dataDir, file), 'utf8', (err, data) => {
-        if (err) {
-          console.error(err);
-        } else {
-          console.log({
-            id: file.toString().slice(0, 5),
-            text: data.toString()
-          });
+    let todos = files.map(file => {
+      return readFileAsync(path.join(exports.dataDir, file))
+        .then(file => {
           return {
             id: file.toString().slice(0, 5),
-            text: data.toString()
+            text: file.toString()
           };
-        }
-      });
+        });
     });
-    Promise.all(todos)
-      .then((results) => callback(null, results))
-      .catch((err) => callback(err));
+    Promise.all(todos).then(todo => console.log(todo));
+    // Promise.all(todos).then(todo => callback(null, todo)).catch(err => callback(err));
   });
+
+  // p.then(files => {
+  //   let todos = files.map(function (file) {
+  //     return readFileAsync(path.join(exports.dataDir, file), 'utf8', (err, data) => {
+
+  //       return {
+  //         id: file.toString().slice(0, 5),
+  //         text: data.toString()
+  //       };
+
+  //     });
+  //   });
+  //   Promise.all(todos)
+  //     .then((results) => callback(null, results))
+  //     .catch((err) => callback(err));
+  // });
 };
 
 
