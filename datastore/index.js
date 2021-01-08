@@ -70,9 +70,13 @@ exports.readAll = (callback) => {
         if (err) {
           console.error(err);
         } else {
+          console.log({
+            id: file.toString().slice(0, 5),
+            text: data.toString()
+          });
           return {
             id: file.toString().slice(0, 5),
-            text: data.toString().split('\n')
+            text: data.toString()
           };
         }
       });
@@ -103,6 +107,7 @@ exports.update = (id, text, callback) => {
     }
   });
 };
+
 
 exports.delete = (id, callback) => {
   let filePath = path.join(exports.dataDir, `${id}.txt`);
