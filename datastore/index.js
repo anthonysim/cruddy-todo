@@ -66,33 +66,20 @@ exports.readAll = (callback) => {
 
   p.then(files => {
     let todos = files.map(file => {
+      let id = file.toString().slice(0, 5);
+
+      // console.log('id', id);
       return readFileAsync(path.join(exports.dataDir, file))
-        .then(file => {
+        .then(data => {
           return {
-            id: file.toString().slice(0, 5),
-            text: file.toString()
+            id,
+            text: data.toString()
           };
         });
     });
-    Promise.all(todos).then(todo => console.log(todo));
-    // Promise.all(todos).then(todo => callback(null, todo)).catch(err => callback(err));
+    // Promise.all(todos).then(todo => console.log(todo));
+    Promise.all(todos).then(todo => callback(null, todo)).catch(err => callback(err));
   });
-
-  // p.then(files => {
-  //   let todos = files.map(function (file) {
-  //     return readFileAsync(path.join(exports.dataDir, file), 'utf8', (err, data) => {
-
-  //       return {
-  //         id: file.toString().slice(0, 5),
-  //         text: data.toString()
-  //       };
-
-  //     });
-  //   });
-  //   Promise.all(todos)
-  //     .then((results) => callback(null, results))
-  //     .catch((err) => callback(err));
-  // });
 };
 
 
