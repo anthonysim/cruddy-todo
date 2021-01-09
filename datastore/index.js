@@ -1,9 +1,17 @@
-const fs = require('fs');
+// const fs = require('fs');
 const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
 var Promise = require('bluebird');
-var readFileAsync = Promise.promisify(require('fs').readFile);
+
+// you can promisify individual node methods
+// var readFileAsync = Promise.promisify(require('fs').readFile);
+// var readdirAsync = Promise.promisify(require('fs').readdir);
+
+// https://sodocumentation.net/bluebird/topic/5655/converting-a-callback-api-to-promises-
+// this automatically adds `Async` postfixed methods to `fs`.
+const fs = Promise.promisifyAll(require('fs'));
+
 
 var items = {};
 
@@ -36,6 +44,7 @@ exports.readOne = (id, callback) => {
   });
 };
 
+// Version 1
 // exports.readAll = (callback) => {
 //   fs.readdir(exports.dataDir, (err, files) => {
 //     if (err) {
@@ -52,34 +61,27 @@ exports.readOne = (id, callback) => {
 //   });
 // };
 
+// Version 2 - Refactored
 exports.readAll = (callback) => {
-  // promise to get all the file names
-  let p = new Promise((resolve, reject) => {
-    fs.readdir(exports.dataDir, (err, files) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(files);
-      }
-    });
-  });
+  return fs.readdirAsync(exports.dataDir)
+    .then(files => {
+      let todos = files.map(file => {
+        let id = file.toString().slice(0, 5);
 
-  p.then(files => {
-    let todos = files.map(file => {
-      let id = file.toString().slice(0, 5);
-
-      // console.log('id', id);
-      return readFileAsync(path.join(exports.dataDir, file))
-        .then(data => {
-          return {
-            id,
-            text: data.toString()
-          };
-        });
+        // console.log('id', id);
+        return fs.readFileAsync(path.join(exports.dataDir, file))
+          .then(data => {
+            return {
+              id,
+              text: data.toString()
+            };
+          });
+      });
+      // Promise.all(todos).then(todo => console.log(todo));
+      Promise.all(todos)
+        .then(todo => callback(null, todo))
+        .catch(err => callback(err));
     });
-    // Promise.all(todos).then(todo => console.log(todo));
-    Promise.all(todos).then(todo => callback(null, todo)).catch(err => callback(err));
-  });
 };
 
 
