@@ -66,13 +66,11 @@ exports.readAll = (callback) => {
   return fs.readdirAsync(exports.dataDir)
     .then(files => {
       let todos = files.map(file => {
-        let id = file.toString().slice(0, 5);
 
-        // console.log('id', id);
         return fs.readFileAsync(path.join(exports.dataDir, file))
           .then(data => {
             return {
-              id,
+              id: file.toString().slice(0, 5),
               text: data.toString()
             };
           });
@@ -83,8 +81,6 @@ exports.readAll = (callback) => {
         .catch(err => callback(err));
     });
 };
-
-
 
 
 exports.update = (id, text, callback) => {
