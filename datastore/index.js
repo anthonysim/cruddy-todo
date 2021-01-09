@@ -1,4 +1,4 @@
-// const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
@@ -10,38 +10,58 @@ var Promise = require('bluebird');
 
 // https://sodocumentation.net/bluebird/topic/5655/converting-a-callback-api-to-promises-
 // this automatically adds `Async` postfixed methods to `fs`.
-const fs = Promise.promisifyAll(require('fs'));
+const pfs = Promise.promisifyAll(require('fs'));
 
 
 var items = {};
 
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
-exports.create = (text, callback) => {
-  counter.getNextUniqueId((err, data) => {
-    let file = path.join(exports.dataDir, `${data}.txt`);
+// exports.create = (text, callback) => {
+//   counter.getNextUniqueId((err, data) => {
+//     let file = path.join(exports.dataDir, `${data}.txt`);
 
-    fs.writeFile(file, text, (err) => {
-      if (err) {
-        console.error(err);
-      } else {
-        callback(null, { id: data, text });
-      }
-    });
+//     fs.writeFile(file, text, (err) => {
+//       if (err) {
+//         console.error(err);
+//       } else {
+//         callback(null, { id: data, text });
+//       }
+//     });
+//   });
+// };
+
+
+exports.create = (text, callback) => {
+  counter.getNextUniqueId((err, id) => {
+    let file = path.join(exports.dataDir, `${id}.txt`);
+
+    pfs.writeFileAsync(file, text)
+      .then(() => callback(null, { id, text }))
+      .catch(() => callback(err));
   });
 };
 
 
+
+// exports.readOne = (id, callback) => {
+//   let filePath = path.join(exports.dataDir, `${id}.txt`);
+
+//   fs.readFile(filePath, (err, data) => {
+//     if (err) {
+//       callback(new Error(`No item with id: ${id}`));
+//     } else {
+//       callback(null, { id, text: data.toString() });
+//     }
+//   });
+// };
+
 exports.readOne = (id, callback) => {
   let filePath = path.join(exports.dataDir, `${id}.txt`);
 
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      callback(new Error(`No item with id: ${id}`));
-    } else {
-      callback(null, { id, text: data.toString() });
-    }
-  });
+  pfs.readFileAsync(filePath)
+    .then((data) => callback(null, { id, text: data.toString() }))
+    .catch(() => callback(new Error(`No item with id: ${id}`)));
 };
 
 // Version 1
@@ -63,11 +83,11 @@ exports.readOne = (id, callback) => {
 
 // Version 2 - Refactored
 exports.readAll = (callback) => {
-  return fs.readdirAsync(exports.dataDir)
+  return pfs.readdirAsync(exports.dataDir)
     .then(files => {
       let todos = files.map(file => {
 
-        return fs.readFileAsync(path.join(exports.dataDir, file))
+        return pfs.readFileAsync(path.join(exports.dataDir, file))
           .then(data => {
             return {
               id: file.toString().slice(0, 5),
@@ -83,36 +103,60 @@ exports.readAll = (callback) => {
 };
 
 
+// exports.update = (id, text, callback) => {
+//   let filePath = path.join(exports.dataDir, `${id}.txt`);
+
+//   fs.readFile(filePath, (err, data) => {
+//     if (err) {
+//       callback(new Error(`No item with id: ${id}`));
+//     } else {
+//       fs.writeFile(filePath, text, (err, data) => {
+//         if (err) {
+//           callback(new Error(`No item with id: ${id}`));
+//         } else {
+//           callback(null, { id, text });
+//         }
+//       });
+//     }
+//   });
+// };
+
 exports.update = (id, text, callback) => {
   let filePath = path.join(exports.dataDir, `${id}.txt`);
-
   fs.readFile(filePath, (err, data) => {
     if (err) {
       callback(new Error(`No item with id: ${id}`));
     } else {
-      fs.writeFile(filePath, text, (err, data) => {
-        if (err) {
-          callback(new Error(`No item with id: ${id}`));
-        } else {
-          callback(null, { id, text });
-        }
-      });
+      pfs.writeFileAsync(filePath, text)
+        .then(() => callback(null, { id: id, text }))
+        .catch(() => callback(new Error(`No item with id: ${id}`)));
     }
   });
 };
 
+
+
+
+// exports.delete = (id, callback) => {
+//   let filePath = path.join(exports.dataDir, `${id}.txt`);
+
+//   fs.unlink(filePath, (err) => {
+//     if (err) {
+//       callback(new Error(`No item with id: ${id}`));
+//     } else {
+//       callback();
+//     }
+//   });
+// };
 
 exports.delete = (id, callback) => {
   let filePath = path.join(exports.dataDir, `${id}.txt`);
 
-  fs.unlink(filePath, (err) => {
-    if (err) {
-      callback(new Error(`No item with id: ${id}`));
-    } else {
-      callback();
-    }
-  });
+  pfs.unlinkAsync(filePath)
+    .then(() => callback())
+    .catch(() => callback(new Error(`No item with id: ${id}`)));
 };
+
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////
 
